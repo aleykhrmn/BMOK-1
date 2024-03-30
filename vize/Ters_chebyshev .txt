@@ -1,0 +1,134 @@
+clear all
+e_ripple = 0.18; % Dalgacık faktörü
+n=4; % Filtre derecesi
+% Chebyshev LPF.pdf sayfa 20 delta_s=1 olarak alındı
+for k=1:n
+D_Re=-sin((2*k-1)*pi/(2*n))*sinh(asinh(1/e_ripple)/n);
+D_Im=i*cos((2*k-1)*pi/(2*n))*cosh(asinh(1/e_ripple)/n);
+% Payda kökleri (kutuplar) p=D_Re+D_Im
+D(k) = [1/(D_Re + D_Im)];
+%Pay sıfırları z=Z
+Z(k) = 1/( -i*cos(pi*(2*k-1)/(2*n)) );
+end
+
+%  Bu döngüde kökleri (sıfırlar ve kutupları) kullanarak
+% Pay polinomu (HcN) ve Payda Polinomu katsayılarını hesaplıyoruz.
+
+for k=1:ceil(n/2)
+	if ( k==(n-k+1) )
+	HcN(k,:)=real([0 0 1]);
+	HcD(k,:)=real([0 1 -D(k)]);
+	else
+	HcN(k,:)=real( conv([1 -Z(k)],[1 -Z(n-k+1)]) );
+	HcD(k,:)=real( conv([1 -D(k)],[1 -D(n-k+1)]) );
+	end
+end
+
+% Aşağıdaki bölümde genel kazanç çarpanını hesaplayıp
+% HcN polinomları ile çarpıyoruz
+% bu sayede filtrenin geçirme bölgesi kazancı 1 oluyor
+Gain=prod(HcD(:,3))/prod(HcN(:,3))
+HcN=Gain^(1/ceil(n/2))*HcN;
+
+% Bu satıra gelindiğinde normalize filtrenin pay polinom katsayıları HcN
+% payda polinom katsayıları HcD matrislerinde tutulmaktadır
+
+% Sıradaki bölümde istediğimiz freakans (w) aralığında her w(l) değeri
+% için Hw=Nw(i)/Dw(i)=HcN(jw)/HcD(j) hesabını yapıyoruz ve
+% abs(Hw) genlik tepkesini çizdiriyoruz.
+
+for l=1:200
+w(l)=4*l/100;
+Nw(l)=1;
+Dw(l)=1;
+	for k=1:ceil(n/2)
+	Nw(l)= Nw(l)*( HcN(k,1)*(i*w(l))^2 + HcN(k,2)*(i*w(l)) + HcN(k,3) ) ;
+	Dw(l)= Dw(l)*( HcD(k,1)*(i*w(l))^2 + HcD(k,2)*(i*w(l)) + HcD(k,3) ) ;
+	Hw(l)=abs( Nw(l)/Dw(l) );
+	end
+end
+plot(w,Hw)
+
+Yüksek geçiren
+
+% Çalışma alanını temizle
+clear all;
+
+% Filtre özellikleri
+N = 4; % Filtre derecesi
+f_stop = 10; % Kesim frekansı
+Rs = 30; % Stopband riple (dB)
+
+% Chebyshev tip-II (ters Chebyshev) filtre tasarımı
+[b, a] = cheby2(N, Rs, f_stop, 'high', 's');
+
+% Frekans vektörünü oluştur
+w = linspace(0, 2 * pi * 100, 200); % 0'dan 2*pi*100'e kadar olan 200 adet noktadan oluşan frekans vektörü
+
+% Frekans tepkisi hesaplama
+Hw = freqs(b, a, w);
+
+% Genlik-frekans grafiğini çiz
+figure;
+plot(w, abs(Hw));
+title('Chebyshev Tip-II (Ters Chebyshev) Yüksek Geçiren Filtre Genlik-Frekans Tepkisi');
+xlabel('Frekans (w)');
+ylabel('|H(w)|');
+grid on;
+
+
+Alçak geçiren
+
+% Çalışma alanını temizle
+clear all;
+
+% Filtre özellikleri
+N = 4; % Filtre derecesi
+f_pass = 10; % Geçiş frekansı
+Rp = 1; % Passband riple (dB)
+
+% Chebyshev tip-II (ters Chebyshev) alçak geçiren filtre tasarımı
+[b, a] = cheby2(N, Rp, f_pass, 'low', 's');
+
+% Frekans vektörünü oluştur
+w = linspace(0, 2 * pi * 100, 200); % 0'dan 2*pi*100'e kadar olan 200 adet noktadan oluşan frekans vektörü
+
+% Frekans tepkisi hesaplama
+Hw = freqs(b, a, w);
+
+% Genlik-frekans grafiğini çiz
+figure;
+plot(w, abs(Hw));
+title('Chebyshev Tip-II (Ters Chebyshev) Alçak Geçiren Filtre Genlik-Frekans Tepkisi');
+xlabel('Frekans (w)');
+ylabel('|H(w)|');
+grid on;
+
+
+Band geçiren
+
+% Çalışma alanını temizle
+clear all;
+
+% Filtre özellikleri
+N = 4; % Filtre derecesi
+f_low = 5; % Alt kesim frekansı
+f_high = 15; % Üst kesim frekansı
+Rs = 30; % Stopband riple (dB)
+
+% Chebyshev tip-II (ters Chebyshev) bant geçiren filtre tasarımı
+[b, a] = cheby2(N, Rs, [f_low, f_high], 'bandpass', 's');
+
+% Frekans vektörünü oluştur
+w = linspace(0, 2 * pi * 100, 200); % 0'dan 2*pi*100'e kadar olan 200 adet noktadan oluşan frekans vektörü
+
+% Frekans tepkisi hesaplama
+Hw = freqs(b, a, w);
+
+% Genlik-frekans grafiğini çiz
+figure;
+plot(w, abs(Hw));
+title('Chebyshev Tip-II (Ters Chebyshev) Bant Geçiren Filtre Genlik-Frekans Tepkisi');
+xlabel('Frekans (w)');
+ylabel('|H(w)|');
+grid on;

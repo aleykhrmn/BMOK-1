@@ -1,0 +1,80 @@
+
+Alçak geçiren
+
+% Çalışma alanını temizle
+clear all;
+
+% Filtre özellikleri
+N = 4; % Filtre derecesi
+fc = 10; % Kesim frekansı
+
+% Butterworth filtre tasarımı
+[b, a] = butter(N, fc, 'low', 's');
+
+% Frekans vektörünü oluştur
+w = linspace(0, 2 * pi * 100, 200); % 0'dan 2*pi*100'e kadar olan 200 adet noktadan oluşan frekans vektörü
+
+% Frekans tepkisi hesaplama
+Hw = freqs(b, a, w);
+
+% Genlik-frekans grafiğini çiz
+figure;
+plot(w, abs(Hw));
+title('Butterworth Düşük Geçiren Filtre Genlik-Frekans Tepkisi');
+xlabel('Frekans (w)');
+ylabel('|H(w)|');
+grid on;
+
+Yüksek geçiren
+
+% Çalışma alanını temizle
+clear all;
+
+% Filtre özellikleri
+N = 4; % Filtre derecesi
+fc = 10; % Kesim frekansı
+
+% Butterworth filtre tasarımı
+[b, a] = butter(N, fc, 'high', 's');
+
+% Frekans vektörünü oluştur
+w = linspace(0, 2 * pi * 100, 200); % 0'dan 2*pi*100'e kadar olan 200 adet noktadan oluşan frekans vektörü
+
+% Frekans tepkisi hesaplama
+Hw = freqs(b, a, w);
+
+% Genlik-frekans grafiğini çiz
+figure;
+plot(w, abs(Hw));
+title('Butterworth Yüksek Geçiren Filtre Genlik-Frekans Tepkisi');
+xlabel('Frekans (w)');
+ylabel('|H(w)|');
+grid on;
+
+Band geçiren
+
+% Çalışma alanını temizle
+clear all;
+
+% Filtre özellikleri
+N = 4; % Filtre derecesi
+f_low = 5; % Alt kesim frekansı
+f_high = 15; % Üst kesim frekansı
+
+% Butterworth bant geçiren filtre tasarımı
+[b, a] = butter(N, [f_low, f_high], 'bandpass', 's');
+
+% Frekans vektörünü oluştur
+w = linspace(0, 2 * pi * 100, 200); % 0'dan 2*pi*100'e kadar olan 200 adet noktadan oluşan frekans vektörü
+
+% Frekans tepkisi hesaplama
+Hw = freqs(b, a, w);
+
+% Genlik-frekans grafiğini çiz
+figure;
+plot(w, abs(Hw));
+title('Butterworth Bant Geçiren Filtre Genlik-Frekans Tepkisi');
+xlabel('Frekans (w)');
+ylabel('|H(w)|');
+grid on;
+
